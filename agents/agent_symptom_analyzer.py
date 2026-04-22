@@ -34,6 +34,7 @@ from typing import Any, Dict, List
 
 from config.state import GlobalState
 from config.observability import log_agent_start, log_tool_call, log_agent_end, log_error
+from config.llm_client import get_llm_commentary
 from tools.tool_symptom_analyzer import symptom_analyzer
 
 
@@ -176,4 +177,21 @@ class SymptomAnalyzerAgent:
         )
 
         log_agent_end(self.name, output_summary, time.time() - start_time)
+
+        # ── LLM Commentary (gracefully degrades if Ollama is not running) ─────
+        state.llm_symptom_reasoning = get_llm_commentary(
+            agent_name=self.name,
+            system_prompt=(
+                "You are a board-certified clinical diagnostician. "
+                "Given the symptom analysis results, provide a concise 2-3 sentence "
+                "clinical reasoning on the differential diagnosis and risk level."
+            ),
+            user_message=(
+                f"Symptoms: {state.patient_info.get('symptoms', [])}\n"
+                f"Top conditions: {[(c['name'], c['confidence_score']) for c in state.possible_conditions[:3]]}\n"
+                f"Risk level: {state.risk_level}\n"
+                f"Emergency flags: {state.emergency_flags or 'none'}"
+            ),
+        )
+
         return state

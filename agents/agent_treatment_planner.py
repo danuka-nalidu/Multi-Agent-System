@@ -36,6 +36,7 @@ from typing import Any, Dict, List
 
 from config.state import GlobalState
 from config.observability import log_agent_start, log_tool_call, log_agent_end, log_error
+from config.llm_client import get_llm_commentary
 from tools.tool_medication_recommender import medication_recommender
 
 
@@ -194,4 +195,21 @@ class TreatmentPlannerAgent:
         )
 
         log_agent_end(self.name, output_summary, time.time() - start_time)
+
+        # ── LLM Commentary (gracefully degrades if Ollama is not running) ─────
+        state.llm_treatment_reasoning = get_llm_commentary(
+            agent_name=self.name,
+            system_prompt=(
+                "You are a senior clinical pharmacist. "
+                "Given the treatment plan, provide a concise 2-3 sentence commentary "
+                "on medication safety, allergy screening, and drug interaction considerations."
+            ),
+            user_message=(
+                f"Conditions: {[c['name'] for c in state.possible_conditions[:2]]}\n"
+                f"Allergies: {state.patient_info.get('allergies', [])}\n"
+                f"Recommended: {[m['name'] for m in state.recommended_medications]}\n"
+                f"Contraindicated: {len(state.contraindicated_medications)} excluded"
+            ),
+        )
+
         return state

@@ -34,6 +34,7 @@ import time
 from typing import Any, Dict
 
 from config.state import GlobalState
+from config.llm_client import get_llm_commentary
 from config.observability import (
     log_agent_start,
     log_tool_call,
@@ -193,6 +194,22 @@ class MedicalReportAgent:
                 title="[green]Pipeline Complete — Healthcare MAS[/]",
                 border_style="green",
             )
+        )
+
+        # ── LLM Commentary (gracefully degrades if Ollama is not running) ─────
+        state.llm_report_reasoning = get_llm_commentary(
+            agent_name=self.name,
+            system_prompt=(
+                "You are a senior medical documentation specialist. "
+                "Given the final report summary, provide a concise 2-3 sentence "
+                "commentary on case quality, report completeness, and key clinical takeaways."
+            ),
+            user_message=(
+                f"Report: {state.report_path}\n"
+                f"Executive summary: {state.executive_summary}\n"
+                f"Risk: {state.risk_level}, Conditions: {len(state.possible_conditions)}, "
+                f"Medications: {len(state.recommended_medications)}"
+            ),
         )
 
         return state

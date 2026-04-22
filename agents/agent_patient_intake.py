@@ -33,6 +33,7 @@ from typing import Any, Dict
 
 from config.state import GlobalState
 from config.observability import log_agent_start, log_tool_call, log_agent_end, log_error
+from config.llm_client import get_llm_commentary
 from tools.tool_patient_reader import patient_record_reader
 
 
@@ -161,4 +162,22 @@ class PatientIntakeAgent:
         )
 
         log_agent_end(self.name, output_summary, time.time() - start_time)
+
+        # ── LLM Commentary (gracefully degrades if Ollama is not running) ─────
+        state.llm_intake_reasoning = get_llm_commentary(
+            agent_name=self.name,
+            system_prompt=(
+                "You are a senior hospital admissions coordinator. "
+                "Given the patient intake validation result, provide a concise "
+                "2-3 sentence clinical commentary on data quality and any concerns."
+            ),
+            user_message=(
+                f"Patient: {state.patient_info.get('name', 'Unknown')} "
+                f"(ID: {state.patient_info.get('patient_id', 'Unknown')})\n"
+                f"Validation passed: {state.is_valid}\n"
+                f"Errors: {state.validation_errors}\n"
+                f"Symptoms: {state.patient_info.get('symptoms', [])}"
+            ),
+        )
+
         return state
