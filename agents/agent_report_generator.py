@@ -115,6 +115,23 @@ class MedicalReportAgent:
             ),
         )
 
+        # ── LLM Commentary for this agent (before tool so it goes into report) ─
+        state.llm_report_reasoning = get_llm_commentary(
+            agent_name=self.name,
+            system_prompt=(
+                "You are a senior medical documentation specialist. "
+                "Given the final report summary, provide a concise 2-3 sentence "
+                "commentary on case quality, report completeness, and key clinical takeaways."
+            ),
+            user_message=(
+                f"Patient: {state.patient_info.get('name', 'Unknown')}\n"
+                f"Top diagnosis: {state.top_diagnosis}\n"
+                f"Risk: {state.risk_level}, Conditions: {len(state.possible_conditions)}, "
+                f"Medications: {len(state.recommended_medications)}\n"
+                f"Emergency flags: {state.emergency_flags or 'none'}"
+            ),
+        )
+
         try:
             result: Dict[str, Any] = medical_report_generator(
                 patient_info=state.patient_info,
@@ -127,6 +144,12 @@ class MedicalReportAgent:
                 contraindicated_medications=state.contraindicated_medications,
                 lifestyle_recommendations=state.lifestyle_recommendations,
                 output_dir="reports",
+                llm_sections={
+                    "intake":    state.llm_intake_reasoning,
+                    "symptom":   state.llm_symptom_reasoning,
+                    "treatment": state.llm_treatment_reasoning,
+                    "report":    state.llm_report_reasoning,
+                },
             )
             log_tool_call(
                 self.name,
@@ -194,22 +217,6 @@ class MedicalReportAgent:
                 title="[green]Pipeline Complete — Healthcare MAS[/]",
                 border_style="green",
             )
-        )
-
-        # ── LLM Commentary (gracefully degrades if Ollama is not running) ─────
-        state.llm_report_reasoning = get_llm_commentary(
-            agent_name=self.name,
-            system_prompt=(
-                "You are a senior medical documentation specialist. "
-                "Given the final report summary, provide a concise 2-3 sentence "
-                "commentary on case quality, report completeness, and key clinical takeaways."
-            ),
-            user_message=(
-                f"Report: {state.report_path}\n"
-                f"Executive summary: {state.executive_summary}\n"
-                f"Risk: {state.risk_level}, Conditions: {len(state.possible_conditions)}, "
-                f"Medications: {len(state.recommended_medications)}"
-            ),
         )
 
         return state
