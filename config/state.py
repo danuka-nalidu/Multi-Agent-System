@@ -125,6 +125,19 @@ class GlobalState:
     executive_summary: str = ""
     """One-paragraph plain-language summary suitable for non-clinical stakeholders."""
 
+    # ── LLM Reasoning Commentary (Ollama) ────────────────────────────────────
+    llm_intake_reasoning: str = ""
+    """Clinical commentary from Ollama LLM on the patient intake validation result."""
+
+    llm_symptom_reasoning: str = ""
+    """Clinical commentary from Ollama LLM on the differential diagnosis findings."""
+
+    llm_treatment_reasoning: str = ""
+    """Clinical commentary from Ollama LLM on the treatment plan safety and rationale."""
+
+    llm_report_reasoning: str = ""
+    """Clinical commentary from Ollama LLM on the final report and executive summary."""
+
     # ── LLMOps / AgentOps Observability ──────────────────────────────────────
     agent_logs: List[AgentLog] = field(default_factory=list)
     pipeline_start: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -188,6 +201,10 @@ class GlobalState:
             "total_medications_recommended": self.total_medications_recommended,
             "report_path": self.report_path,
             "executive_summary": self.executive_summary,
+            "llm_intake_reasoning":    self.llm_intake_reasoning,
+            "llm_symptom_reasoning":   self.llm_symptom_reasoning,
+            "llm_treatment_reasoning": self.llm_treatment_reasoning,
+            "llm_report_reasoning":    self.llm_report_reasoning,
             "agent_logs": [
                 {
                     "agent": log.agent_name,
