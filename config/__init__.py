@@ -1,0 +1,1 @@
+"""Healthcare MAS — Config package."""

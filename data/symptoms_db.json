@@ -1,0 +1,165 @@
+{
+  "version": "1.0",
+  "description": "Medical symptom-to-condition knowledge base for the Healthcare MAS",
+  "conditions": [
+    {
+      "id": "COND001",
+      "name": "Influenza",
+      "icd10_code": "J11.1",
+      "category": "Respiratory",
+      "severity": "moderate",
+      "symptoms": [
+        "high fever", "fever", "body aches", "muscle aches", "severe fatigue",
+        "fatigue", "headache", "dry cough", "cough", "chills", "sweating",
+        "loss of appetite", "sore throat", "runny nose"
+      ],
+      "emergency_indicators": ["difficulty breathing", "chest pain", "confusion", "persistent vomiting"],
+      "description": "A contagious respiratory illness caused by influenza viruses affecting the nose, throat, and lungs.",
+      "typical_duration": "1–2 weeks",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND002",
+      "name": "Common Cold",
+      "icd10_code": "J00",
+      "category": "Respiratory",
+      "severity": "mild",
+      "symptoms": [
+        "runny nose", "sneezing", "sore throat", "mild cough", "cough",
+        "nasal congestion", "watery eyes", "mild fever", "low grade fever",
+        "mild fatigue", "fatigue"
+      ],
+      "emergency_indicators": [],
+      "description": "A viral infection of the upper respiratory tract characterised by runny nose and cough.",
+      "typical_duration": "7–10 days",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND003",
+      "name": "Pneumonia",
+      "icd10_code": "J18.9",
+      "category": "Respiratory",
+      "severity": "severe",
+      "symptoms": [
+        "high fever", "fever", "productive cough", "cough", "chest pain",
+        "shortness of breath", "difficulty breathing", "fatigue", "chills",
+        "sweating", "loss of appetite", "confusion", "rapid breathing"
+      ],
+      "emergency_indicators": ["difficulty breathing", "chest pain", "confusion", "cyanosis"],
+      "description": "Infection causing inflammation in the air sacs of one or both lungs.",
+      "typical_duration": "2–4 weeks",
+      "requires_urgent_care": true
+    },
+    {
+      "id": "COND004",
+      "name": "Hypertension",
+      "icd10_code": "I10",
+      "category": "Cardiovascular",
+      "severity": "moderate",
+      "symptoms": [
+        "headache", "dizziness", "shortness of breath", "chest pain",
+        "blurred vision", "nosebleeds", "flushing", "palpitations"
+      ],
+      "emergency_indicators": ["severe chest pain", "sudden vision loss", "severe headache", "confusion"],
+      "description": "Persistently elevated blood pressure in the arteries, increasing cardiovascular risk.",
+      "typical_duration": "Chronic condition",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND005",
+      "name": "Type 2 Diabetes",
+      "icd10_code": "E11",
+      "category": "Endocrine",
+      "severity": "moderate",
+      "symptoms": [
+        "frequent urination", "excessive thirst", "blurred vision", "fatigue",
+        "slow wound healing", "tingling in hands", "tingling in feet",
+        "numbness", "unexplained weight loss", "weight loss", "increased hunger"
+      ],
+      "emergency_indicators": ["extreme confusion", "loss of consciousness", "fruity breath"],
+      "description": "A metabolic disorder characterised by high blood glucose due to insulin resistance.",
+      "typical_duration": "Chronic condition",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND006",
+      "name": "Urinary Tract Infection",
+      "icd10_code": "N39.0",
+      "category": "Urinary",
+      "severity": "mild",
+      "symptoms": [
+        "burning urination", "painful urination", "frequent urination",
+        "cloudy urine", "dark urine", "pelvic pain", "lower abdominal pain",
+        "low grade fever", "fever", "blood in urine", "urgency to urinate"
+      ],
+      "emergency_indicators": ["high fever", "back pain", "shaking chills", "nausea", "vomiting"],
+      "description": "Bacterial infection affecting any part of the urinary system.",
+      "typical_duration": "3–7 days with treatment",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND007",
+      "name": "Migraine",
+      "icd10_code": "G43.9",
+      "category": "Neurological",
+      "severity": "moderate",
+      "symptoms": [
+        "severe headache", "headache", "nausea", "vomiting",
+        "sensitivity to light", "sensitivity to sound", "visual disturbances",
+        "aura", "dizziness", "neck stiffness", "throbbing pain"
+      ],
+      "emergency_indicators": ["sudden severe headache", "fever with stiff neck", "slurred speech", "vision loss"],
+      "description": "A neurological condition causing intense, debilitating headaches often with nausea and light sensitivity.",
+      "typical_duration": "4–72 hours per episode",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND008",
+      "name": "Asthma",
+      "icd10_code": "J45.9",
+      "category": "Respiratory",
+      "severity": "moderate",
+      "symptoms": [
+        "wheezing", "shortness of breath", "difficulty breathing",
+        "chest tightness", "cough", "nighttime cough", "exercise-induced cough",
+        "breathlessness"
+      ],
+      "emergency_indicators": ["severe breathlessness", "lips turning blue", "rapid worsening", "no relief from inhaler"],
+      "description": "A chronic condition causing airways to narrow, swell, and produce extra mucus.",
+      "typical_duration": "Chronic condition with episodic attacks",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND009",
+      "name": "Gastroenteritis",
+      "icd10_code": "K59.1",
+      "category": "Gastrointestinal",
+      "severity": "mild",
+      "symptoms": [
+        "nausea", "vomiting", "diarrhea", "stomach cramps", "abdominal pain",
+        "mild fever", "low grade fever", "loss of appetite", "dehydration",
+        "weakness", "fatigue"
+      ],
+      "emergency_indicators": ["blood in stool", "signs of severe dehydration", "high fever", "severe abdominal pain"],
+      "description": "Inflammation of the stomach and intestines, typically caused by a viral or bacterial infection.",
+      "typical_duration": "1–3 days",
+      "requires_urgent_care": false
+    },
+    {
+      "id": "COND010",
+      "name": "Anxiety Disorder",
+      "icd10_code": "F41.1",
+      "category": "Mental Health",
+      "severity": "moderate",
+      "symptoms": [
+        "excessive worry", "restlessness", "fatigue", "difficulty concentrating",
+        "irritability", "muscle tension", "sleep problems", "insomnia",
+        "rapid heartbeat", "palpitations", "sweating", "trembling"
+      ],
+      "emergency_indicators": ["suicidal thoughts", "severe panic attack", "inability to function"],
+      "description": "A mental health condition characterised by persistent, excessive worry and physical tension symptoms.",
+      "typical_duration": "Chronic condition",
+      "requires_urgent_care": false
+    }
+  ]
+}

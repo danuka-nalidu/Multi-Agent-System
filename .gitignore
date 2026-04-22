@@ -1,0 +1,62 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+.venv.bak/
+venv/
+env/
+ENV/
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test / coverage
+.pytest_cache/
+.tox/
+.nox/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+junit.xml
+.cache/
+
+# Type check / lint
+.mypy_cache/
+.ruff_cache/
+.pyre/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE / editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Local environment files
+.env
+.env.*
+
+# Python version managers
+.python-version
+
+# Project-generated outputs
+logs/
+reports/
+
+# Optional: ignore local run traces/reports anywhere
+**/trace_*.json
+**/*_medical_report_*.md
+**/*_medical_report_*.json

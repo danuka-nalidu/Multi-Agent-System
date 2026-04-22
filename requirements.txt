@@ -1,0 +1,12 @@
+# ── Core runtime ──────────────────────────────────────────────────────────────
+rich>=13.9.4
+pydantic>=2.10.6
+python-dotenv>=1.0.1
+
+# ── LLM / Ollama (optional — not required for pure-Python pipeline) ────────────
+ollama>=0.4.7
+requests>=2.32.3
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=8.3.4
+pytest-asyncio>=0.24.0
