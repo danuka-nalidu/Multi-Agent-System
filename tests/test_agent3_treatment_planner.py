@@ -230,16 +230,16 @@ class TestTreatmentPlannerAgentIntegration:
         assert required_keys.issubset(state.treatment_plan.keys())
 
     def test_agent_respects_allergy_from_pt001(self, patient_pt001_path: str) -> None:
-        """PT001 is allergic to penicillin — Amoxicillin must not be recommended."""
+        """PT001 is allergic to nsaid — Ibuprofen must not be recommended."""
         state = self._run_up_to_agent3(patient_pt001_path)
         names = [m["name"].lower() for m in state.recommended_medications]
-        assert "amoxicillin" not in names
+        assert "ibuprofen" not in names
 
     def test_agent_respects_allergy_from_pt002(self, patient_pt002_path: str) -> None:
-        """PT002 is allergic to sulfonamide — Co-trimoxazole must not be recommended."""
+        """PT002 is allergic to corticosteroid — Beclomethasone Inhaler must not be recommended."""
         state = self._run_up_to_agent3(patient_pt002_path)
         names = [m["name"].lower() for m in state.recommended_medications]
-        assert "co-trimoxazole" not in names
+        assert "beclomethasone inhaler" not in names
 
     def test_agent_aborts_gracefully_without_conditions(self) -> None:
         """Agent must return state cleanly when possible_conditions is empty."""
