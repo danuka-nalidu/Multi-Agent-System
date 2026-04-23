@@ -200,12 +200,12 @@ class TestSymptomAnalyzerAgentIntegration:
         state = SymptomAnalyzerAgent().run(state)
         assert len(state.agent_logs) > log_count_before
 
-    def test_agent_processes_pt002_uti(self, patient_pt002_path: str) -> None:
-        """Agent must identify UTI-related conditions for PT002."""
+    def test_agent_processes_pt002_asthma(self, patient_pt002_path: str) -> None:
+        """Agent must identify Asthma-related conditions for PT002."""
         from agents.agent_patient_intake import PatientIntakeAgent
         state = reset_state()
         state.patient_file_path = patient_pt002_path
         state = PatientIntakeAgent().run(state)
         state = SymptomAnalyzerAgent().run(state)
         names = [c["name"] for c in state.possible_conditions]
-        assert "Urinary Tract Infection" in names
+        assert "Asthma" in names
