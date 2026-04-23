@@ -39,7 +39,7 @@ def run_full_pipeline(patient_file_path: str) -> GlobalState:
 
 
 class TestFullPipelinePT001:
-    """End-to-end tests for the full pipeline using patient PT001 (Influenza case)."""
+    """End-to-end tests for the full pipeline using patient PT001 (Pneumonia case)."""
 
     def test_pipeline_runs_without_exception(self, patient_pt001_path: str) -> None:
         """The complete 4-agent pipeline must complete without raising any exception."""
@@ -50,18 +50,18 @@ class TestFullPipelinePT001:
         """state.patient_info must be populated after the full run."""
         state = run_full_pipeline(patient_pt001_path)
         assert state.patient_info.get("patient_id") == "PT001"
-        assert state.patient_info.get("name") == "Amara Perera"
+        assert state.patient_info.get("name") == "Sithumi Rathnayake"
 
     def test_conditions_found_after_pipeline(self, patient_pt001_path: str) -> None:
         """state.possible_conditions must contain at least one entry."""
         state = run_full_pipeline(patient_pt001_path)
         assert len(state.possible_conditions) >= 1
 
-    def test_influenza_is_top_diagnosis_for_pt001(self, patient_pt001_path: str) -> None:
-        """PT001 classic influenza symptoms must produce Influenza as top diagnosis."""
+    def test_pneumonia_is_top_diagnosis_for_pt001(self, patient_pt001_path: str) -> None:
+        """PT001 pneumonia symptoms must produce Pneumonia as top diagnosis."""
         state = run_full_pipeline(patient_pt001_path)
-        assert state.top_diagnosis == "Influenza", (
-            f"Expected 'Influenza', got '{state.top_diagnosis}'"
+        assert state.top_diagnosis == "Pneumonia", (
+            f"Expected 'Pneumonia', got '{state.top_diagnosis}'"
         )
 
     def test_medications_recommended_for_pt001(self, patient_pt001_path: str) -> None:
@@ -69,11 +69,11 @@ class TestFullPipelinePT001:
         state = run_full_pipeline(patient_pt001_path)
         assert len(state.recommended_medications) >= 1
 
-    def test_penicillin_allergy_respected_for_pt001(self, patient_pt001_path: str) -> None:
-        """PT001 is allergic to penicillin — Amoxicillin must not appear."""
+    def test_nsaid_allergy_respected_for_pt001(self, patient_pt001_path: str) -> None:
+        """PT001 is allergic to nsaid — Ibuprofen must not appear in recommendations."""
         state = run_full_pipeline(patient_pt001_path)
         names = [m["name"].lower() for m in state.recommended_medications]
-        assert "amoxicillin" not in names
+        assert "ibuprofen" not in names
 
     def test_report_file_created_for_pt001(self, patient_pt001_path: str) -> None:
         """A report file must be saved to disk after the full pipeline."""
@@ -109,33 +109,32 @@ class TestFullPipelinePT001:
 
 
 class TestFullPipelinePT002:
-    """End-to-end tests using patient PT002 (UTI case with existing medications)."""
+    """End-to-end tests using patient PT002 (Asthma + Gastroenteritis case)."""
 
     def test_pipeline_runs_without_exception_pt002(self, patient_pt002_path: str) -> None:
         """Pipeline must complete without exception for PT002."""
         state = run_full_pipeline(patient_pt002_path)
         assert state is not None
 
-    def test_uti_detected_for_pt002(self, patient_pt002_path: str) -> None:
-        """PT002 UTI symptoms must result in UTI as a top diagnosis."""
+    def test_asthma_detected_for_pt002(self, patient_pt002_path: str) -> None:
+        """PT002 asthma symptoms must result in Asthma as a top diagnosis."""
         state = run_full_pipeline(patient_pt002_path)
         names = [c["name"] for c in state.possible_conditions]
-        assert "Urinary Tract Infection" in names
+        assert "Asthma" in names
 
-    def test_sulfonamide_allergy_respected_for_pt002(self, patient_pt002_path: str) -> None:
-        """PT002 is allergic to sulfonamide — Co-trimoxazole must not be recommended."""
+    def test_corticosteroid_allergy_respected_for_pt002(self, patient_pt002_path: str) -> None:
+        """PT002 is allergic to corticosteroid — Beclomethasone Inhaler must not be recommended."""
         state = run_full_pipeline(patient_pt002_path)
         names = [m["name"].lower() for m in state.recommended_medications]
-        assert "co-trimoxazole" not in names
+        assert "beclomethasone inhaler" not in names
 
     def test_current_medications_not_duplicated_for_pt002(
         self, patient_pt002_path: str
     ) -> None:
-        """PT002 takes metformin and lisinopril — neither must be re-recommended."""
+        """PT002 takes salbutamol inhaler — it must not be re-recommended."""
         state = run_full_pipeline(patient_pt002_path)
         names = [m["name"].lower() for m in state.recommended_medications]
-        assert "metformin" not in names
-        assert "lisinopril" not in names
+        assert "salbutamol inhaler" not in names
 
     def test_report_file_created_for_pt002(self, patient_pt002_path: str) -> None:
         """A report file must be saved to disk after processing PT002."""
