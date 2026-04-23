@@ -1,32 +1,34 @@
 {
   "patient_id": "PT002",
-  "name": "Roshan Fernando",
-  "age": 52,
+  "name": "Kavinda Jayawickrama",
+  "age": 29,
   "gender": "Male",
-  "blood_type": "A+",
-  "chief_complaint": "Burning sensation during urination and frequent urge to urinate for 2 days",
+  "blood_type": "A-",
+  "chief_complaint": "Worsening wheezing and shortness of breath, accompanied by nausea, vomiting and diarrhea for 3 days",
   "symptoms": [
-    "burning urination",
-    "frequent urination",
-    "cloudy urine",
-    "pelvic pain",
+    "wheezing",
+    "shortness of breath",
+    "chest tightness",
+    "nausea",
+    "vomiting",
+    "diarrhea",
     "low grade fever",
-    "urgency to urinate"
+    "fatigue"
   ],
-  "medical_history": ["type 2 diabetes", "hypertension"],
-  "current_medications": ["metformin", "lisinopril"],
-  "allergies": ["sulfonamide"],
+  "medical_history": ["asthma diagnosed at age 12", "lactose intolerance"],
+  "current_medications": ["salbutamol inhaler"],
+  "allergies": ["corticosteroid"],
   "vital_signs": {
-    "temperature_celsius": 37.8,
-    "blood_pressure_mmhg": "148/92",
-    "heart_rate_bpm": 88,
-    "respiratory_rate_rpm": 16,
-    "oxygen_saturation_percent": 98
+    "temperature_celsius": 37.6,
+    "blood_pressure_mmhg": "112/72",
+    "heart_rate_bpm": 84,
+    "respiratory_rate_rpm": 18,
+    "oxygen_saturation_percent": 96
   },
   "contact": {
-    "phone": "076-555-7890",
-    "emergency_contact": "Nilanthi Fernando",
-    "emergency_phone": "070-222-3344"
+    "phone": "076-789-0123",
+    "emergency_contact": "Malini Jayawickrama",
+    "emergency_phone": "070-456-7890"
   },
-  "registration_date": "2026-04-22"
+  "registration_date": "2026-04-23"
 }
