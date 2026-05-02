@@ -47,41 +47,39 @@ Patient JSON File
            │ (llm_intake_reasoning)  │ PatientIntakeAgent + LLM │
            ▼                         └────────┬─────────────────┘
 ┌────────────────────────────┐               │
-│   SymptomAnalyzerAgent     │               ▼
-│ Tool: symptom_analyzer     │       ┌──────────────────────────┐
-│ LLM: Ollama reasoning      │       │   symptom node           │
-└──────────┬─────────────────┘       │ SymptomAnalyzerAgent     │
-           │ GlobalState             │ + LLM reasoning          │
-           │ (llm_symptom_reasoning) └────────┬─────────────────┘
-           ▼                                  │
-┌─────────────────────────────┐              ▼
-│   TreatmentPlannerAgent     │      ┌──────────────────────────┐
-│ Tool: medication_recommender │     │   treatment node         │
-│ LLM: Ollama reasoning       │     │ TreatmentPlannerAgent    │
-└──────────┬──────────────────┘     │ + LLM reasoning          │
-           │ GlobalState            └────────┬─────────────────┘
-           │ (llm_treatment_reasoning)       │
-           ▼                                 ▼
-┌──────────────────────────┐         ┌──────────────────────────┐
-│   MedicalReportAgent     │         │   report node            │
-│ Tool: report_generator   │         │ MedicalReportAgent       │
-│ LLM: Ollama reasoning    │         │ + LLM reasoning          │
-└──────────┬───────────────┘         └────────┬─────────────────┘
-           │ GlobalState (llm_report_reasoning)│
-           │                                   ▼
-           ▼                           ┌──────────────────┐
-┌────────────────────┐                │    END Node      │
-│  reports/report_   │                └──────────────────┘
-│   *.md (incl. LLM  │
-│  Section 7: AI     │
+│   SymptomAnalyzerAgent     │       is_valid?│ (conditional routing)
+│ Tool: symptom_analyzer     │      ┌────────┴──────────┐
+│ LLM: Ollama reasoning      │      │ YES               │ NO
+└──────────┬─────────────────┘      ▼                   ▼
+           │ GlobalState   ┌──────────────────┐  ┌─────────────┐
+           │               │   symptom node   │  │  abort node │
+           ▼               │ SymptomAnalyzer  │  │ (logs error)│
+┌─────────────────────────────┐ + LLM        │  └──────┬──────┘
+│   TreatmentPlannerAgent     │└──────┬───────┘         │
+│ Tool: medication_recommender│       ▼                  ▼
+│ LLM: Ollama reasoning       │┌──────────────────┐   END
+└──────────┬──────────────────┘│ treatment node   │
+           │ GlobalState       │ TreatmentPlanner │
+           ▼                   │ + LLM reasoning  │
+┌──────────────────────────┐   └──────┬───────────┘
+│   MedicalReportAgent     │          ▼
+│ Tool: report_generator   │   ┌──────────────────┐
+│ LLM: Ollama reasoning    │   │   report node    │
+└──────────┬───────────────┘   │ MedicalReport    │
+           │                   │ + LLM reasoning  │
+           ▼                   └──────┬───────────┘
+┌────────────────────┐                ▼
+│  reports/report_   │          ┌──────────────────┐
+│   *.md (incl. LLM  │          │    END Node      │
+│  Section 7: AI     │          └──────────────────┘
 │ Reasoning)         │
 │  logs/trace_*.json │
 └────────────────────┘
 ```
 
-**Orchestration Pattern:** 
+**Orchestration Pattern:**
 - **Sequential Pipeline (main.py):** Coordinator-Worker pattern. Each agent reads from and writes to the shared `GlobalState` object — no data is lost between handoffs.
-- **LangGraph Orchestration (main_langgraph.py):** StateGraph with 4 nodes (intake, symptom, treatment, report) connected in a linear DAG. Each node wraps an agent and executes via LangGraph runtime.
+- **LangGraph Orchestration (main_langgraph.py):** StateGraph with 5 nodes (intake, symptom, treatment, report, abort) with **conditional routing** after the intake node. If the patient record is invalid (`is_valid = False`), the pipeline routes to the `abort` node and stops — downstream agents are never called. Valid records proceed through the full pipeline.
 
 **LLM Integration:**
 - **Ollama (llama3.2:3b)** runs locally on port 11434
@@ -126,11 +124,13 @@ ctse_mas/
 │       └── patient_PT002.json            # UTI case (with comorbidities)
 │
 ├── tests/
-│   ├── test_agent1_patient_intake.py     # 21 tests
-│   ├── test_agent2_symptom_analyzer.py   # 22 tests
-│   ├── test_agent3_treatment_planner.py  # 21 tests
-│   ├── test_agent4_report_generator.py   # 15 tests
-│   └── test_pipeline_integration.py      # Group integration harness (19 tests)
+│   ├── test_agent1_patient_intake.py     # 21 tests — patient intake tool + agent
+│   ├── test_agent2_symptom_analyzer.py   # 22 tests — symptom analyzer tool + agent
+│   ├── test_agent3_treatment_planner.py  # 21 tests — medication recommender tool + agent
+│   ├── test_agent4_report_generator.py   # 15 tests — report generator tool + agent
+│   ├── test_pipeline_integration.py      # 19 tests — full end-to-end pipeline + state flow
+│   ├── test_property_based.py            # 12 tests — Hypothesis property-based invariant tests
+│   └── test_llm_judge.py                 # 4 tests  — LLM-as-a-Judge evaluation (Ollama)
 │
 ├── reports/                              # Generated Markdown reports (incl. Section 7: AI Reasoning)
 └── logs/                                 # LLMOps JSON traces
@@ -204,19 +204,23 @@ Both entry points produce identical outputs with LLM reasoning included (Section
 ### Run All Tests
 
 ```bash
-cd ctse_mas
-
-# Full test suite (98 tests)
+# Full test suite (114 tests — all passing)
 python -m pytest tests/ -v
 
 # Individual agent tests
-python -m pytest tests/test_agent1_patient_intake.py -v     
-python -m pytest tests/test_agent2_symptom_analyzer.py -v  
-python -m pytest tests/test_agent3_treatment_planner.py -v  
-python -m pytest tests/test_agent4_report_generator.py -v   
+python -m pytest tests/test_agent1_patient_intake.py -v     # 21 tests
+python -m pytest tests/test_agent2_symptom_analyzer.py -v   # 22 tests
+python -m pytest tests/test_agent3_treatment_planner.py -v  # 21 tests
+python -m pytest tests/test_agent4_report_generator.py -v   # 15 tests
 
 # Full pipeline integration tests
-python -m pytest tests/test_pipeline_integration.py -v
+python -m pytest tests/test_pipeline_integration.py -v      # 19 tests
+
+# Property-based tests (Hypothesis — generates 40-80 random inputs per test)
+python -m pytest tests/test_property_based.py -v            # 12 tests
+
+# LLM-as-a-Judge evaluation (requires Ollama running; skips gracefully if not)
+python -m pytest tests/test_llm_judge.py -v                 # 4 tests
 ```
 
 ---
@@ -275,15 +279,18 @@ Generated Markdown reports include 7 sections:
 
 ## Technical Requirements Met
 
-| Requirement                      | Implementation                                                                                |
-| -------------------------------- | --------------------------------------------------------------------------------------------- |
-| ✅ 4 Distinct Agents             | PatientIntakeAgent, SymptomAnalyzerAgent, TreatmentPlannerAgent, MedicalReportAgent           |
-| ✅ Custom Python Tools           | 4 tools with type hints, docstrings, and error handling                                       |
-| ✅ State Management              | `GlobalState` dataclass with 4 new `llm_*_reasoning` fields for LLM commentary storage        |
-| ✅ LLMOps / Observability        | `observability.py` logs every agent start/end/tool call + JSON trace                          |
-| ✅ No Paid APIs                  | Runs entirely locally — no OpenAI/Anthropic keys needed                                       |
-| ✅ Individual Agent + Tool       | Each member owns one agent and one corresponding tool                                         |
-| ✅ Testing & Evaluation          | 98 tests: unit, integration, and full end-to-end pipeline (all passing)                       |
-| ✅ **LangGraph Orchestration**   | `main_langgraph.py` — StateGraph with 4 agent nodes (intake, symptom, treatment, report)     |
-| ✅ **Ollama LLM Integration**    | `config/llm_client.py` — llama3.2:3b local LLM, 4 agents call `get_llm_commentary()` per tool |
-| ✅ **Graceful LLM Degradation**  | Pipeline runs fully without Ollama; LLM blocks return "" safely on failure                     |
+| Requirement                         | Implementation                                                                                       |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ✅ 4 Distinct Agents                | PatientIntakeAgent, SymptomAnalyzerAgent, TreatmentPlannerAgent, MedicalReportAgent                  |
+| ✅ Custom Python Tools              | 4 tools with strict type hints, docstrings, and robust error handling                                |
+| ✅ State Management                 | `GlobalState` dataclass — shared across all agents; no context lost between handoffs                 |
+| ✅ LLMOps / Observability           | `observability.py` — logs every agent start/end/tool call; JSON traces saved to `logs/`             |
+| ✅ No Paid APIs                     | Runs entirely locally — no OpenAI/Anthropic keys needed                                              |
+| ✅ Individual Agent + Tool          | Each member owns one agent and one corresponding tool                                                |
+| ✅ **LangGraph Orchestration**      | `main_langgraph.py` — StateGraph with 5 nodes (intake, symptom, treatment, report, abort)            |
+| ✅ **Conditional Routing**          | `add_conditional_edges` after intake — invalid patients abort to END; valid patients run full pipeline |
+| ✅ **Ollama LLM Integration**       | `config/llm_client.py` — llama3.2:3b local LLM; all 4 agents call `get_llm_commentary()` per tool  |
+| ✅ **Graceful LLM Degradation**     | Pipeline runs fully without Ollama; LLM fields return `""` safely if service is unavailable         |
+| ✅ **Property-Based Testing**       | `test_property_based.py` — 12 Hypothesis tests verifying tool invariants across random inputs        |
+| ✅ **LLM-as-a-Judge Evaluation**    | `test_llm_judge.py` — Ollama judges pipeline output quality; asserts score ≥ 3/5                    |
+| ✅ **114 Tests — All Passing**      | Unit + integration + end-to-end + property-based + LLM-as-a-Judge (3 skip if Ollama unavailable)    |
