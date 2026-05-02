@@ -82,14 +82,71 @@ def node_medical_report(state: PipelineState) -> PipelineState:
     return {"global_state": updated}
 
 
+# ── Routing & Abort ───────────────────────────────────────────────────────────
+
+def route_after_intake(state: PipelineState) -> str:
+    """
+    Conditional routing function evaluated after the intake node completes.
+
+    Returns 'symptom' when GlobalState.is_valid is True, otherwise 'abort'.
+    LangGraph calls this function and uses the returned string as the key
+    into the path_map supplied to add_conditional_edges().
+
+    Args:
+        state: Current PipelineState containing the updated GlobalState.
+
+    Returns:
+        'symptom' — proceed to SymptomAnalyzerAgent.
+        'abort'   — route to the abort node and stop the pipeline.
+    """
+    if state["global_state"].is_valid:
+        return "symptom"
+    return "abort"
+
+
+def node_abort_invalid_patient(state: PipelineState) -> PipelineState:
+    """
+    LangGraph node: terminal handler for invalid patient records.
+
+    Executed when PatientIntakeAgent sets GlobalState.is_valid = False.
+    Logs the validation errors via the observability module and returns
+    state unchanged. The graph routes to END immediately after this node.
+
+    Args:
+        state: Current PipelineState with is_valid=False.
+
+    Returns:
+        Unchanged PipelineState.
+    """
+    gs: GlobalState = state["global_state"]
+    console.print(
+        Panel(
+            f"[bold red]Patient validation FAILED — pipeline aborted.[/]\n"
+            f"Errors: {gs.validation_errors}",
+            title="[red]INTAKE ABORT[/]",
+            border_style="red",
+        )
+    )
+    gs.log_agent_action(
+        agent_name="PipelineRouter",
+        action="Abort: invalid patient record",
+        input_summary=f"is_valid=False, errors={len(gs.validation_errors)}",
+        output_summary="Pipeline halted. Downstream agents skipped.",
+        tool_calls=[],
+        status="error",
+    )
+    return {"global_state": gs}
+
+
 # ── Graph Construction ─────────────────────────────────────────────────────────
 
 def build_healthcare_graph():
     """
     Construct and compile the LangGraph StateGraph for the healthcare pipeline.
 
-    Topology:
-        START → intake → symptom → treatment → report → END
+    Topology (conditional routing after intake):
+        START → intake ─┬→ symptom → treatment → report → END
+                        └→ abort → END   (when patient record is invalid)
     """
     graph = StateGraph(PipelineState)
 
@@ -97,12 +154,23 @@ def build_healthcare_graph():
     graph.add_node("symptom",   node_symptom_analyzer)
     graph.add_node("treatment", node_treatment_planner)
     graph.add_node("report",    node_medical_report)
+    graph.add_node("abort",     node_abort_invalid_patient)
 
-    graph.add_edge(START,       "intake")
-    graph.add_edge("intake",    "symptom")
+    graph.add_edge(START, "intake")
+
+    graph.add_conditional_edges(
+        "intake",
+        route_after_intake,
+        {
+            "symptom": "symptom",
+            "abort":   "abort",
+        },
+    )
+
     graph.add_edge("symptom",   "treatment")
     graph.add_edge("treatment", "report")
     graph.add_edge("report",    END)
+    graph.add_edge("abort",     END)
 
     return graph.compile()
 
