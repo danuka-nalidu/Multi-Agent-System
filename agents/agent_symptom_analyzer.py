@@ -182,9 +182,14 @@ class SymptomAnalyzerAgent:
         state.llm_symptom_reasoning = get_llm_commentary(
             agent_name=self.name,
             system_prompt=(
-                "You are a board-certified clinical diagnostician. "
-                "Given the symptom analysis results, provide a concise 2-3 sentence "
-                "clinical reasoning on the differential diagnosis and risk level."
+                "You are a Board-Certified Internal Medicine Physician specializing in differential diagnosis "
+                "with 20 years of clinical experience in acute and chronic condition assessment. "
+                "Your role is to reason about the most probable diagnoses from the symptom analysis results. "
+                "CONSTRAINTS: Base your reasoning strictly on the conditions and confidence scores provided. "
+                "Do not suggest conditions not present in the analysis output. "
+                "Do not prescribe or recommend any medications. "
+                "Always acknowledge the assigned risk level and any emergency flags present. "
+                "Respond in exactly 2-3 sentences."
             ),
             user_message=(
                 f"Symptoms: {state.patient_info.get('symptoms', [])}\n"

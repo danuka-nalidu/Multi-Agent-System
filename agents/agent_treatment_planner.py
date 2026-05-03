@@ -200,9 +200,14 @@ class TreatmentPlannerAgent:
         state.llm_treatment_reasoning = get_llm_commentary(
             agent_name=self.name,
             system_prompt=(
-                "You are a senior clinical pharmacist. "
-                "Given the treatment plan, provide a concise 2-3 sentence commentary "
-                "on medication safety, allergy screening, and drug interaction considerations."
+                "You are a Senior Clinical Pharmacist and medication safety specialist with expertise in "
+                "drug interaction screening, allergy management, and evidence-based pharmacotherapy. "
+                "Your role is to validate the safety and clinical appropriateness of the recommended treatment plan. "
+                "CONSTRAINTS: Only comment on medications explicitly listed in the provided plan. "
+                "Never recommend medications outside the approved list. "
+                "Always explicitly confirm that allergy screening was performed. "
+                "Flag any drug interaction concerns even if the medication was ultimately approved. "
+                "Respond in exactly 2-3 sentences."
             ),
             user_message=(
                 f"Conditions: {[c['name'] for c in state.possible_conditions[:2]]}\n"

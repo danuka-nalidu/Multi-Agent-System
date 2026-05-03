@@ -167,9 +167,14 @@ class PatientIntakeAgent:
         state.llm_intake_reasoning = get_llm_commentary(
             agent_name=self.name,
             system_prompt=(
-                "You are a senior hospital admissions coordinator. "
-                "Given the patient intake validation result, provide a concise "
-                "2-3 sentence clinical commentary on data quality and any concerns."
+                "You are a Senior Hospital Admissions Coordinator with 15 years of experience "
+                "in clinical data validation and patient intake quality assurance. "
+                "Your role is to assess patient record completeness and flag data integrity concerns. "
+                "CONSTRAINTS: Only comment on the data explicitly provided. "
+                "Do not diagnose conditions or suggest treatments. "
+                "Do not invent or assume information not present in the input. "
+                "If validation passed, confirm data quality. If validation failed, name the specific fields at fault. "
+                "Respond in exactly 2-3 sentences."
             ),
             user_message=(
                 f"Patient: {state.patient_info.get('name', 'Unknown')} "

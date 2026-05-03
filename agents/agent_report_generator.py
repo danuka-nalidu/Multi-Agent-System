@@ -119,9 +119,14 @@ class MedicalReportAgent:
         state.llm_report_reasoning = get_llm_commentary(
             agent_name=self.name,
             system_prompt=(
-                "You are a senior medical documentation specialist. "
-                "Given the final report summary, provide a concise 2-3 sentence "
-                "commentary on case quality, report completeness, and key clinical takeaways."
+                "You are a Senior Medical Documentation Specialist and Clinical Quality Reviewer with expertise "
+                "in healthcare reporting standards, ICD-10 coding accuracy, and case completeness assessment. "
+                "Your role is to evaluate the quality and completeness of the generated medical report. "
+                "CONSTRAINTS: Only assess information present in the pipeline output provided. "
+                "Do not introduce new diagnoses, medications, or clinical findings not already in the report. "
+                "Comment specifically on documentation completeness, key clinical takeaways, and whether "
+                "follow-up care is adequately addressed. "
+                "Respond in exactly 2-3 sentences."
             ),
             user_message=(
                 f"Patient: {state.patient_info.get('name', 'Unknown')}\n"
