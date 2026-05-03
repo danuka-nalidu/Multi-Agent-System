@@ -124,13 +124,14 @@ ctse_mas/
 │       └── patient_PT002.json            # UTI case (with comorbidities)
 │
 ├── tests/
-│   ├── test_agent1_patient_intake.py     # 21 tests — patient intake tool + agent
-│   ├── test_agent2_symptom_analyzer.py   # 22 tests — symptom analyzer tool + agent
-│   ├── test_agent3_treatment_planner.py  # 21 tests — medication recommender tool + agent
-│   ├── test_agent4_report_generator.py   # 15 tests — report generator tool + agent
-│   ├── test_pipeline_integration.py      # 19 tests — full end-to-end pipeline + state flow
-│   ├── test_property_based.py            # 12 tests — Hypothesis property-based invariant tests
-│   └── test_llm_judge.py                 # 4 tests  — LLM-as-a-Judge evaluation (Ollama)
+│   ├── test_agent1_patient_intake.py            # 21 tests — patient intake tool + agent (IT22069672)
+│   ├── test_agent2_symptom_analyzer.py          # 22 tests — symptom analyzer tool + agent (IT22271532)
+│   ├── test_agent3_treatment_planner.py          # 21 tests — medication recommender tool + agent (IT22306654)
+│   ├── test_agent4_report_generator.py           # 15 tests — report generator tool + agent (IT22102614)
+│   ├── test_pipeline_integration.py              # 19 tests — full end-to-end pipeline + state flow
+│   ├── test_property_based.py                    # 12 tests — Hypothesis property-based invariant tests
+│   ├── test_llm_judge.py                         # 4 tests  — LLM-as-a-Judge pipeline evaluation (Ollama)
+│   └── test_llm_judge_treatment_planner.py       # 4 tests  — LLM-as-a-Judge for Treatment Planner (IT22306654)
 │
 ├── reports/                              # Generated Markdown reports (incl. Section 7: AI Reasoning)
 └── logs/                                 # LLMOps JSON traces
@@ -204,23 +205,24 @@ Both entry points produce identical outputs with LLM reasoning included (Section
 ### Run All Tests
 
 ```bash
-# Full test suite (114 tests — all passing)
+# Full test suite (118 tests — all passing)
 python -m pytest tests/ -v
 
 # Individual agent tests
-python -m pytest tests/test_agent1_patient_intake.py -v     # 21 tests
-python -m pytest tests/test_agent2_symptom_analyzer.py -v   # 22 tests
-python -m pytest tests/test_agent3_treatment_planner.py -v  # 21 tests
-python -m pytest tests/test_agent4_report_generator.py -v   # 15 tests
+python -m pytest tests/test_agent1_patient_intake.py -v            # 21 tests (IT22069672)
+python -m pytest tests/test_agent2_symptom_analyzer.py -v          # 22 tests (IT22271532)
+python -m pytest tests/test_agent3_treatment_planner.py -v         # 21 tests (IT22306654)
+python -m pytest tests/test_agent4_report_generator.py -v          # 15 tests (IT22102614)
 
 # Full pipeline integration tests
-python -m pytest tests/test_pipeline_integration.py -v      # 19 tests
+python -m pytest tests/test_pipeline_integration.py -v             # 19 tests
 
 # Property-based tests (Hypothesis — generates 40-80 random inputs per test)
-python -m pytest tests/test_property_based.py -v            # 12 tests
+python -m pytest tests/test_property_based.py -v                   # 12 tests
 
 # LLM-as-a-Judge evaluation (requires Ollama running; skips gracefully if not)
-python -m pytest tests/test_llm_judge.py -v                 # 4 tests
+python -m pytest tests/test_llm_judge.py -v                        # 4 tests — pipeline-level judge
+python -m pytest tests/test_llm_judge_treatment_planner.py -v      # 4 tests — Treatment Planner judge (IT22306654)
 ```
 
 ---
@@ -228,32 +230,41 @@ python -m pytest tests/test_llm_judge.py -v                 # 4 tests
 ## What Each Agent Does
 
 ### Agent 1 — PatientIntakeAgent
+**Owner: IT22069672 — W D U Bolonghe**
 
 - Loads and validates the patient JSON record
 - Checks required fields, age range, blood type, vital signs
 - Populates `GlobalState` with patient demographics, symptoms, and vitals
-- **LLM Reasoning:** Calls Ollama (llama3.2:3b) for clinical commentary on data quality and validation concerns
+- Drives LangGraph conditional routing — invalid records route to `abort` node
+- **Persona:** Senior Hospital Admissions Coordinator (15 years experience)
+- **LLM Reasoning:** Calls Ollama for clinical commentary on data quality and validation concerns; confirms specific failing fields if validation failed
 
 ### Agent 2 — SymptomAnalyzerAgent
+**Owner: IT22271532 — H M Madhawa Awishka**
 
 - Matches patient symptoms against `symptoms_db.json` (10 conditions)
-- Scores and ranks probable conditions by confidence percentage
-- Detected conditions include: Influenza, UTI, Pneumonia, COVID-19, Diabetes, and more
-- **LLM Reasoning:** Calls Ollama for clinical reasoning on differential diagnosis and risk level
+- Scores and ranks probable conditions by confidence percentage using normalised overlap scoring
+- Detects emergency indicators and escalates risk level (low → moderate → high → critical)
+- **Persona:** Board-Certified Internal Medicine Physician (20 years experience)
+- **LLM Reasoning:** Calls Ollama for clinical reasoning on differential diagnosis and risk level; constrained to only conditions in the analysis output
 
 ### Agent 3 — TreatmentPlannerAgent
+**Owner: IT22306654 — W D N Ariyarathne**
 
 - Recommends medications from `medications_db.json` (14 medications)
-- Screens against patient allergies before recommending
-- Outputs a safe, structured treatment plan with dosage and duration
-- **LLM Reasoning:** Calls Ollama for commentary on medication safety, allergy screening, and drug interactions
+- Zero-tolerance allergy filtering, drug interaction checking, and duplication guard
+- Outputs a safe, structured treatment plan with dosage, lifestyle advice, and follow-up schedule
+- **Persona:** Senior Clinical Pharmacist and medication safety specialist
+- **LLM Reasoning:** Calls Ollama to validate medication safety; always confirms allergy screening was performed and flags interaction concerns
 
 ### Agent 4 — MedicalReportAgent
+**Owner: IT22102614 — D B D Wahalathanthri**
 
 - Aggregates all pipeline results from `GlobalState`
-- Generates a structured Markdown report saved to `reports/`
+- Generates a structured 10-section Markdown report saved to `reports/` + JSON summary
 - Records a full LLMOps execution trace to `logs/`
-- **LLM Reasoning:** Calls Ollama for clinical review of report completeness and case quality
+- **Persona:** Senior Medical Documentation Specialist and Clinical Quality Reviewer
+- **LLM Reasoning:** Calls Ollama for clinical review of report completeness, key takeaways, and follow-up care adequacy
 
 ---
 
@@ -291,6 +302,7 @@ Generated Markdown reports include 7 sections:
 | ✅ **Conditional Routing**          | `add_conditional_edges` after intake — invalid patients abort to END; valid patients run full pipeline |
 | ✅ **Ollama LLM Integration**       | `config/llm_client.py` — llama3.2:3b local LLM; all 4 agents call `get_llm_commentary()` per tool  |
 | ✅ **Graceful LLM Degradation**     | Pipeline runs fully without Ollama; LLM fields return `""` safely if service is unavailable         |
+| ✅ **Agent Personas & Constraints** | All 4 agents have named personas, explicit CONSTRAINTS blocks, and format-enforced LLM prompts       |
 | ✅ **Property-Based Testing**       | `test_property_based.py` — 12 Hypothesis tests verifying tool invariants across random inputs        |
-| ✅ **LLM-as-a-Judge Evaluation**    | `test_llm_judge.py` — Ollama judges pipeline output quality; asserts score ≥ 3/5                    |
-| ✅ **114 Tests — All Passing**      | Unit + integration + end-to-end + property-based + LLM-as-a-Judge (3 skip if Ollama unavailable)    |
+| ✅ **LLM-as-a-Judge Evaluation**    | Pipeline-level + individual Treatment Planner judge; asserts score ≥ 3/5, allergy screening confirmed |
+| ✅ **118 Tests — All Passing**      | Unit + integration + end-to-end + property-based + LLM-as-a-Judge (skips gracefully if Ollama unavailable) |
