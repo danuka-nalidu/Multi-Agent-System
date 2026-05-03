@@ -9,10 +9,10 @@ Sequential Pipeline Architecture:
     ──►  TreatmentPlannerAgent  ──►  MedicalReportAgent
 
 Student Contributions:
-    Agent 1 / Tool 1: PatientIntakeAgent
-    Agent 2 / Tool 2: SymptomAnalyzerAgent
-    Agent 3 / Tool 3: TreatmentPlannerAgent
-    Agent 4 / Tool 4: MedicalReportAgent
+    IT22069672  W D U Bolonghe          — Agent 1 / Tool 1: PatientIntakeAgent    / tool_patient_reader
+    IT22271532  H M Madhawa Awishka     — Agent 2 / Tool 2: SymptomAnalyzerAgent  / tool_symptom_analyzer
+    IT22306654  W D N Ariyarathne       — Agent 3 / Tool 3: TreatmentPlannerAgent / tool_medication_recommender
+    IT22102614  D B D Wahalathanthri    — Agent 4 / Tool 4: MedicalReportAgent    / tool_report_generator
 
 Usage:
     python main.py --patient data/patients/patient_PT001.json

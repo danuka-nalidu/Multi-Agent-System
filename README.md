@@ -8,12 +8,12 @@ A locally-hosted **Multi-Agent System (MAS)** that automates the full patient-ca
 
 ## Team Members & Responsibilities
 
-| Student ID | Name | Agent                 | Tool                          |
-| ---------- | ---- | --------------------- | ----------------------------- |
-|            |      | PatientIntakeAgent    | `tool_patient_reader`         |
-|            |      | SymptomAnalyzerAgent  | `tool_symptom_analyzer`       |
-|            |      | TreatmentPlannerAgent | `tool_medication_recommender` |
-|            |      | MedicalReportAgent    | `tool_report_generator`       |
+| Student ID | Name                    | Agent                 | Tool                          |
+| ---------- | ----------------------- | --------------------- | ----------------------------- |
+| IT22069672 | W D U Bolonghe          | PatientIntakeAgent    | `tool_patient_reader`         |
+| IT22271532 | H M Madhawa Awishka     | SymptomAnalyzerAgent  | `tool_symptom_analyzer`       |
+| IT22306654 | W D N Ariyarathne       | TreatmentPlannerAgent | `tool_medication_recommender` |
+| IT22102614 | D B D Wahalathanthri    | MedicalReportAgent    | `tool_report_generator`       |
 
 ---
 

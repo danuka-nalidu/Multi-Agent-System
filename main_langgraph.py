@@ -6,6 +6,12 @@ This module replaces the manual sequential pipeline in main.py with a
 LangGraph StateGraph.  All four agents are wrapped as LangGraph nodes and
 the graph is compiled and invoked via LangGraph's runtime.
 
+Student Contributions:
+    IT22069672  W D U Bolonghe          — Agent 1 / Tool 1: PatientIntakeAgent    / tool_patient_reader
+    IT22271532  H M Madhawa Awishka     — Agent 2 / Tool 2: SymptomAnalyzerAgent  / tool_symptom_analyzer
+    IT22306654  W D N Ariyarathne       — Agent 3 / Tool 3: TreatmentPlannerAgent / tool_medication_recommender
+    IT22102614  D B D Wahalathanthri    — Agent 4 / Tool 4: MedicalReportAgent    / tool_report_generator
+
 The original main.py is preserved and unchanged.
 
 Usage:
